@@ -1,6 +1,7 @@
 import React from 'react';
 import { Player, Card as CardType } from '../../core/types';
 import { Card } from './Card';
+import { useSelection } from '../../contexts/SelectionContext';
 
 interface SeatProps {
     player: Player;
@@ -25,19 +26,25 @@ export const Seat: React.FC<SeatProps> = ({
     positionStyle,
     positionLabel
 }) => {
+    const { selectedSeat, setSelectedSeat } = useSelection();
     const isFolded = player.status === 'folded';
     const isAllIn = player.status === 'all-in';
+    const isSelected = selectedSeat === player.seat;
 
     // Determine if we should show card faces
     const revealCards = (isHero || showCards || godMode) && !isFolded;
 
     return (
         <div
-            className={`absolute flex flex-col items-center transition-all duration-300 ${isFolded ? 'opacity-50 grayscale' : ''}`}
+            className={`absolute flex flex-col items-center transition-all duration-300 cursor-pointer ${isFolded ? 'opacity-50 grayscale' : ''}`}
             style={positionStyle}
+            onClick={(e) => {
+                e.stopPropagation();
+                setSelectedSeat(player.seat);
+            }}
         >
             {/* Cards */}
-            <div className="flex -space-x-4 mb-2 relative z-10">
+            <div className={`flex -space-x-4 mb-2 relative z-10 transition-all duration-300 ${isSelected ? 'scale-110 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]' : ''}`}>
                 {/* Position Label */}
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-400 z-50 shadow-sm">
                     {positionLabel}
@@ -51,10 +58,11 @@ export const Seat: React.FC<SeatProps> = ({
 
             {/* Player Info Bubble */}
             <div className={`
-        relative px-4 py-2 rounded-lg border-2 min-w-[120px] text-center shadow-lg backdrop-blur-md
+        relative px-4 py-2 rounded-lg border-2 min-w-[120px] text-center shadow-lg backdrop-blur-md transition-colors duration-200
         ${isWinner ? 'bg-green-600 border-green-400 scale-110 z-30 shadow-[0_0_20px_rgba(74,222,128,0.5)] text-white' :
-                    isActive ? 'bg-yellow-100 border-yellow-400 scale-110 z-20 text-black' :
-                        'bg-gray-800/90 border-gray-600 text-white'}
+                    isSelected ? 'bg-gray-800 border-yellow-400 ring-2 ring-yellow-400/50 z-20 text-white' :
+                        isActive ? 'bg-yellow-100 border-yellow-400 scale-110 z-20 text-black' :
+                            'bg-gray-800/90 border-gray-600 text-white hover:border-gray-400'}
       `}>
 
 

@@ -1,10 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { usePokerEngine } from '@/ui/hooks/usePokerEngine';
 import { PokerTable } from '@/ui/components/PokerTable';
 import { GameSetupModal } from '@/ui/components/GameSetupModal';
+import { StudioLayout } from '@/ui/layouts/StudioLayout';
+import { SelectionProvider } from '@/contexts/SelectionContext';
 import { HandConfig, ScenarioConfig } from '@/core/types';
+
+import { RangeMatrix } from '@/ui/components/tools/RangeMatrix';
+import { GameControls } from '@/ui/components/GameControls';
+import { SidebarTabs } from '@/ui/components/layout/SidebarTabs';
+import { StatsTab } from '@/ui/components/tools/StatsTab';
 
 // Initial Config for testing
 const INITIAL_CONFIG: HandConfig = {
@@ -77,66 +85,51 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-950">
-      {/* Debug / Config Overlay */}
-      <div className="absolute top-4 left-4 z-50 bg-black/80 text-white p-4 rounded text-xs border border-white/10 max-w-[180px]">
-        <h3 className="font-bold mb-4 text-yellow-400 text-center">Poker Engine v0.5</h3>
-        <div className="flex flex-col gap-2 mb-4">
-          <button
-            onClick={nextHand}
-            disabled={!state.winners || !replay.isLive}
-            className={`px-3 py-1 rounded font-bold ${state.winners && replay.isLive
-              ? 'bg-blue-600 hover:bg-blue-500'
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-              }`}
-          >
-            Next Hand
-          </button>
-          <button
-            onClick={() => resetGame({ ...INITIAL_CONFIG, seed: Date.now() })}
-            className="bg-red-600 px-3 py-1 rounded hover:bg-red-500 font-bold"
-          >
-            Reset
-          </button>
-          <button
-            onClick={() => setShowSetup(true)}
-            className="bg-purple-600 px-3 py-1 rounded hover:bg-purple-500 font-bold"
-          >
-            New Scenario
-          </button>
-          <button
-            onClick={() => setGodMode(!godMode)}
-            className={`px-3 py-1 rounded font-bold ${godMode ? 'bg-green-600' : 'bg-gray-600'}`}
-          >
-            God Mode: {godMode ? 'ON' : 'OFF'}
-          </button>
-        </div>
-        <div className="font-mono space-y-1">
-          <div>Street: <span className="text-blue-400">{state.street}</span></div>
-          <div>Pot: <span className="text-green-400">${state.pots.reduce((s, p) => s + p.amount, 0)}</span></div>
-          <div>Min Raise: <span className="text-orange-400">${state.minRaise}</span></div>
-        </div>
-        {error && (
-          <div className="mt-2 text-red-400 font-bold bg-red-900/20 p-2 rounded border border-red-500/50">
-            Error: {error}
-          </div>
-        )}
-      </div>
-
-      <PokerTable
-        state={state}
-        onDispatch={dispatch}
-        heroSeat={heroSeat}
-        godMode={godMode}
-        replay={replay}
-      />
-
-      {showSetup && (
-        <GameSetupModal
-          onStart={handleStartScenario}
-          onClose={() => setShowSetup(false)}
+    <SelectionProvider>
+      <div className="flex flex-col h-screen bg-gray-950 overflow-hidden">
+        {/* Top Bar Controls */}
+        <GameControls
+          state={state}
+          onNextHand={nextHand}
+          onReset={() => resetGame({ ...INITIAL_CONFIG, seed: Date.now() })}
+          onNewScenario={() => setShowSetup(true)}
+          godMode={godMode}
+          onToggleGodMode={() => setGodMode(!godMode)}
+          isLive={replay.isLive}
+          error={error}
         />
-      )}
-    </div>
+
+        {/* Main Split Layout */}
+        <div className="flex-1 min-h-0">
+          <StudioLayout
+            sidebar={
+              <SidebarTabs
+                tabs={[
+                  { id: 'ranges', label: 'Ranges', content: <RangeMatrix /> },
+                  { id: 'stats', label: 'Stats', content: <StatsTab state={state} heroSeat={heroSeat} /> }
+                ]}
+              />
+            }
+          >
+            <div className="relative h-full bg-gray-950">
+              <PokerTable
+                state={state}
+                onDispatch={dispatch}
+                heroSeat={heroSeat}
+                godMode={godMode}
+                replay={replay}
+              />
+
+              {showSetup && (
+                <GameSetupModal
+                  onStart={handleStartScenario}
+                  onClose={() => setShowSetup(false)}
+                />
+              )}
+            </div>
+          </StudioLayout>
+        </div>
+      </div>
+    </SelectionProvider>
   );
 }

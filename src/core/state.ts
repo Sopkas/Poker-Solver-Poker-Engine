@@ -1,6 +1,7 @@
 import { GameState, HandConfig, Player, Pot, Card, PlayerStatus, ScenarioConfig } from './types';
 import { createDeck, shuffleDeck, drawCards } from './deck';
 import { createPRNG, PRNGState } from './prng';
+import { validateTableConfig, validatePlayerStack, isValidChipAmount } from './validation';
 
 /**
  * Creates the initial state for a new hand.
@@ -12,6 +13,37 @@ import { createPRNG, PRNGState } from './prng';
  * - Determinism: f(config, seed) always produces the same state
  */
 export const createInitialState = (config: HandConfig, scenarioConfig?: ScenarioConfig): GameState => {
+    // === CRITICAL: Validate all numeric inputs ===
+    // This prevents NaN, Infinity, or fractional values from corrupting state
+    validateTableConfig(config.tableConfig);
+
+    // Validate player stacks
+    for (const player of config.players) {
+        validatePlayerStack(player.stack, player.id);
+    }
+
+    // Validate scenario overrides if present
+    if (scenarioConfig?.players) {
+        for (const sp of scenarioConfig.players) {
+            if (sp.stack !== undefined) {
+                validatePlayerStack(sp.stack, `scenario player seat ${sp.seat}`);
+            }
+        }
+    }
+
+    // Validate dealer seat
+    if (
+        typeof config.dealerSeat !== 'number' ||
+        !Number.isInteger(config.dealerSeat) ||
+        config.dealerSeat < 0 ||
+        config.dealerSeat >= config.tableConfig.maxSeats
+    ) {
+        throw {
+            code: 'INVALID_DEALER_SEAT',
+            message: `dealerSeat must be an integer between 0 and ${config.tableConfig.maxSeats - 1}. Got: ${config.dealerSeat}`,
+        };
+    }
+
     // 1. Initialize PRNG
     let rngState = createPRNG(config.seed);
 

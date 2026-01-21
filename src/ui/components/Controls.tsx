@@ -29,7 +29,7 @@ export const Controls: React.FC<ControlsProps> = ({
     // --- Ghost Mode: Viewing past state ---
     if (!isLive) {
         return (
-            <div className="h-20 flex items-center justify-center bg-gray-900/80 backdrop-blur border-t border-white/10">
+            <div className="h-14 flex items-center justify-center">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <span className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></span>
@@ -53,10 +53,10 @@ export const Controls: React.FC<ControlsProps> = ({
     // --- Showdown: Show Next Hand button ---
     if (state.street === 'showdown') {
         return (
-            <div className="flex gap-4 items-center justify-center p-4 bg-gray-900/80 backdrop-blur border-t border-white/10">
+            <div className="flex gap-4 items-center justify-center p-3">
                 <button
                     onClick={() => onDispatch('next-hand')}
-                    className="px-8 py-3 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded shadow-lg active:transform active:scale-95 transition-all text-lg animate-pulse"
+                    className="px-6 py-2 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded shadow-lg active:transform active:scale-95 transition-all animate-pulse"
                 >
                     NEXT HAND
                 </button>
@@ -67,7 +67,7 @@ export const Controls: React.FC<ControlsProps> = ({
     // --- Waiting for opponent ---
     if (!isHeroTurn) {
         return (
-            <div className="h-20 flex items-center justify-center text-white/50 italic bg-gray-900/80 backdrop-blur border-t border-white/10">
+            <div className="h-14 flex items-center justify-center text-white/50 italic">
                 Waiting for {activePlayer?.name}...
             </div>
         );
@@ -75,7 +75,7 @@ export const Controls: React.FC<ControlsProps> = ({
 
     // --- Hero's turn: Show action buttons ---
     return (
-        <div className="flex gap-4 items-center justify-center p-4 bg-gray-900/80 backdrop-blur border-t border-white/10">
+        <div className="flex gap-2 items-center justify-center p-2">
             {legalActions.map((action) => {
                 let label = action.type.toUpperCase();
                 let onClick = () => onDispatch(action.type, action.minAmount);
@@ -95,7 +95,7 @@ export const Controls: React.FC<ControlsProps> = ({
                     <button
                         key={action.type}
                         onClick={onClick}
-                        className={`px-6 py-3 ${colorClass} text-white font-bold rounded shadow-lg active:transform active:scale-95 transition-all`}
+                        className={`px-4 py-2 text-sm ${colorClass} text-white font-bold rounded-lg shadow active:transform active:scale-95 transition-all min-w-[80px]`}
                     >
                         {label}
                     </button>
@@ -130,7 +130,7 @@ const BettingControls: React.FC<{
     if (!action) return null;
 
     return (
-        <div className="flex items-center gap-4 bg-black/40 p-2 rounded-lg">
+        <div className="flex items-center gap-3 bg-black/40 p-1.5 rounded-lg border border-white/5 mx-2">
             <div className="flex flex-col">
                 <input
                     type="range"
@@ -138,27 +138,29 @@ const BettingControls: React.FC<{
                     max={action.maxAmount}
                     value={amount}
                     onChange={(e) => setAmount(Number(e.target.value))}
-                    className="w-48"
+                    className="w-32 h-1.5 accent-red-500 bg-gray-700 rounded-lg appearance-none cursor-pointer"
                 />
-                <div className="flex justify-between text-xs text-gray-400">
+                <div className="flex justify-between text-[10px] text-gray-400 mt-1">
                     <span>{action.minAmount}</span>
                     <span>{action.maxAmount}</span>
                 </div>
             </div>
             <div className="flex flex-col gap-1">
-                <span className="text-white font-mono text-center">{amount}</span>
-                <button
-                    onClick={() => onDispatch(action.type, amount)}
-                    className="px-4 py-1 bg-red-600 hover:bg-red-500 text-white font-bold rounded text-sm"
-                >
-                    {action.type.toUpperCase()}
-                </button>
-                <button
-                    onClick={() => onDispatch(action.type, action.maxAmount)}
-                    className="px-4 py-1 bg-[#800020] hover:bg-[#600018] text-white font-bold rounded text-sm"
-                >
-                    ALL IN
-                </button>
+                <span className="text-white font-mono text-center text-xs font-bold">{amount}</span>
+                <div className="flex gap-1">
+                    <button
+                        onClick={() => onDispatch(action.type, amount)}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white font-bold rounded text-xs"
+                    >
+                        {action.type.toUpperCase()}
+                    </button>
+                    <button
+                        onClick={() => onDispatch(action.type, action.maxAmount)}
+                        className="px-2 py-1 bg-[#800020] hover:bg-[#600018] text-white font-bold rounded text-xs"
+                    >
+                        ALL
+                    </button>
+                </div>
             </div>
         </div>
     );

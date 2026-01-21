@@ -1,4 +1,5 @@
 import { GameState, Action, ActionType, Player, Pot, Street } from '../types';
+import { isValidChipAmount } from '../validation';
 
 // --- Types ---
 
@@ -173,6 +174,19 @@ export const getLegalActions = (state: GameState): ActionType[] => {
  * Validates an action. Throws ActionError if illegal.
  */
 export const validateAction = (state: GameState, action: Action): void => {
+    // === CRITICAL: Validate amount is a valid integer ===
+    // This prevents NaN, Infinity, negative, or fractional values from corrupting state
+    if (!isValidChipAmount(action.amount)) {
+        throw {
+            code: 'INVALID_AMOUNT',
+            message: `Amount must be a non-negative integer. Got: ${
+                typeof action.amount === 'number'
+                    ? (Number.isNaN(action.amount) ? 'NaN' : action.amount)
+                    : typeof action.amount
+            }`
+        } as ActionError;
+    }
+
     const player = state.players.find(p => p.id === action.playerId);
     if (!player) {
         throw { code: 'PLAYER_NOT_FOUND', message: 'Player not found' } as ActionError;

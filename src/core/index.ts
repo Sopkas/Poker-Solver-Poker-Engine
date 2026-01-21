@@ -27,4 +27,35 @@ export { ConsistencyAudit } from './audit';
 export { Evaluator, evaluate, getScore, getHandName } from './evaluator';
 export type { HandEvaluation, HandRank } from './evaluator';
 export { Showdown, resolveShowdown, getShowdownResult, resolveSingleWinner } from './showdown';
+export {
+    isValidChipAmount,
+    isPositiveChipAmount,
+    assertValidChipAmount,
+    assertPositiveChipAmount,
+    validateTableConfig,
+    validatePlayerStack,
+    validateActionAmount,
+    sanitizeChipAmount,
+} from './validation';
+export type { ValidationError } from './validation';
+
+// Range Manager exports
+export {
+    RANKS,
+    TOTAL_COMBOS,
+    getHandNotation,
+    getHandCategory,
+    countCombos,
+    countWeightedCombos,
+    generateHandMatrix,
+    getAllHands,
+    generateEmptyRange,
+    generateFullRange,
+    cloneRange,
+    calculateRangeStats,
+    generateTopPercentRange,
+    mergeRanges,
+    intersectRanges,
+} from './ranges';
+export type { Range, HandCategory, HandInfo, RangeStats, RankChar } from './ranges';
 
