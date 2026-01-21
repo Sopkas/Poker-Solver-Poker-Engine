@@ -1,0 +1,54 @@
+﻿
+> poker-solver@0.1.0 test
+> jest src/core/engine/showdown_next_hand.test.ts
+
+  console.log
+    Winner: Villain Amount: 2000 Hand: Three of a Kind, Ks
+
+      at Object.<anonymous> (src/core/engine/showdown_next_hand.test.ts:52:17)
+
+node.exe : FAIL src/core/engine
+/showdown_next_hand.test.ts
+строка:1 знак:1
++ & "C:\Program Files\nodejs/no
+de.exe" "C:\Users\Sopkasss\AppD
+ata\Roami ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo          :  
+   NotSpecified: (FAIL src/co  
+  re/e...xt_hand.test.ts:Str   
+ ing) [], RemoteException
+    + FullyQualifiedErrorId :  
+   NativeCommandError
+ 
+  Showdown and Next Hand
+    ├Ч Should resolve showdown 
+and allow next hand (31 ms)
+    ├Ч Should handle Next Hand 
+with sufficient players (1 ms)
+
+  тЧП Showdown and Next Hand тА
+║ Should resolve showdown and a
+llow next hand
+
+    Player is all-in
+
+
+  тЧП Showdown and Next Hand тА
+║ Should handle Next Hand with 
+sufficient players
+
+    Action type next-hand is no
+t allowed. Allowed:
+
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 total
+Snapshots:   0 total
+Time:        0.549 s, estimated
+ 1 s
+Ran all test suites matching sr
+c/core/engine/showdown_next_han
+d.test.ts.

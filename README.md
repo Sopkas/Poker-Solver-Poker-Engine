@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Poker Solver
 
-## Getting Started
+Проект представляет собой продвинутый движок и симулятор Техасского Холдема (No-Limit Texas Hold'em), разработанный с упором на корректность правил, производительность и тестируемость. Приложение позволяет симулировать раздачи, управлять состоянием игры и визуализировать процесс через веб-интерфейс.
 
-First, run the development server:
+## Особенности
 
+- **Core Engine**: Полностью реализованная логика покера, включая все улицы торговли (Preflop, Flop, Turn, River) и Showdown.
+- **Strict Rules Validation**: Строгая валидация действий игроков (Check, Call, Bet, Raise, Fold) в зависимости от контекста.
+- **Hand Evaluator**: Высокопроизводительный алгоритм оценки силы рук (7-card evaluator) с поддержкой кикеров.
+- **Showdown Resolution**: Корректный расчет победителей и распределение банков, включая сложную логику Side Pots (побочных банков).
+- **Immutable State**: Архитектура на основе неизменяемого состояния (Immutable State), что упрощает отладку, тестирование и реализацию функций Undo/Redo.
+- **Custom Scenarios**: Гибкая система настройки сценариев для симуляции конкретных игровых ситуаций (кастомные стеки, карманные карты, блайнды).
+- **Modern UI**: Отзывчивый интерфейс, построенный на React и Tailwind CSS.
+
+## Технологический стек
+
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **UI Library**: [React 19](https://react.dev/)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Testing**: [Jest](https://jestjs.io/)
+- **State Management**: Custom Immutable State Pattern
+
+## Установка и запуск
+
+### Предварительные требования
+- Node.js (версии 18 или выше)
+- npm или yarn
+
+### Шаги по установке
+
+1. Клонируйте репозиторий (если применимо) или перейдите в папку проекта.
+2. Установите зависимости:
+   ```bash
+   npm install
+   ```
+
+### Запуск в режиме разработки
+
+Для запуска локального сервера разработки:
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000).
+
+### Запуск тестов
+
+Проект имеет обширное покрытие тестами для проверки логики движка и правил.
+```bash
+npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Структура проекта
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **`src/core`**: Ядро покерного движка.
+  - `engine`: Основной цикл игры и переходы состояний.
+  - `rules`: Валидация действий и правила улиц.
+  - `evaluator`: Алгоритмы оценки комбинаций карт.
+  - `showdown`: Логика вскрытия карт и распределения выигрыша.
+  - `types`: TypeScript определения типов.
+- **`src/ui`**: React-компоненты интерфейса.
+  - `components`: Переиспользуемые UI элементы (PokerTable, Seat, Card).
+- **`src/app`**: Страницы приложения (Next.js App Router).
+- **`src/utils`**: Вспомогательные функции.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Статус разработки
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Проект находится в активной разработке. Реализованы основные механики игры, оценка рук и базовый UI. Ведется работа над улучшением UX и расширением функционала анализа раздач.

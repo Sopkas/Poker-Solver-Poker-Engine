@@ -1,0 +1,107 @@
+﻿
+> poker-solver@0.1.0 test
+> jest src/core/engine/showdown_next_hand.test.ts
+
+node.exe : FAIL src/core/engine
+/showdown_next_hand.test.ts
+строка:1 знак:1
++ & "C:\Program Files\nodejs/no
+de.exe" "C:\Users\Sopkasss\AppD
+ata\Roami ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo          :  
+   NotSpecified: (FAIL src/co  
+  re/e...xt_hand.test.ts:Str   
+ ing) [], RemoteException
+    + FullyQualifiedErrorId :  
+   NativeCommandError
+ 
+  Showdown and Next Hand
+    ├Ч Should resolve showdown 
+and allow next hand (11 ms)
+    ├Ч Should handle Next Hand 
+with sufficient players (1 ms)
+
+  тЧП Showdown and Next Hand тА
+║ Should resolve showdown and a
+llow next hand
+
+    expect(received).toBe(expec
+ted) // Object.is equality
+
+    Expected: "Hero"
+    Received: "Villain"
+
+    [0m [90m 51 |[39m       
+  [90m// Hero (AA) should win 
+against Villain (KK)[39m
+     [90m 52 |[39m         [
+36mconst[39m winner [33m=[39
+m state[33m.[39mwinners[33m!
+[39m[[35m0[39m][33m;[39m
+    [31m[1m>[22m[39m[90m 5
+3 |[39m         expect(winner
+[33m.[39mplayerId)[33m.[39mt
+oBe([32m'Hero'[39m)[33m;[39
+m
+     [90m    |[39m           
+                      [31m[1m
+^[22m[39m
+     [90m 54 |[39m         ex
+pect(winner[33m.[39mamount)[
+33m.[39mtoBe([35m2000[39m)[
+33m;[39m
+     [90m 55 |[39m
+     [90m 56 |[39m         [
+90m// Players should have stack
+s updated (Hero 2000, Villain 0
+)[39m[0m
+
+      at Object.<anonymous> (sr
+c/core/engine/showdown_next_han
+d.test.ts:53:33)
+
+  тЧП Showdown and Next Hand тА
+║ Should handle Next Hand with 
+sufficient players
+
+    Cannot resolve showdown: ne
+ed 5 community cards
+
+    [0m [90m 159 |[39m
+     [90m 160 |[39m     [36m
+if[39m (state[33m.[39mcommun
+ityCards[33m.[39mlength [33m
+<[39m [35m5[39m) {
+    [31m[1m>[22m[39m[90m 1
+61 |[39m         [36mthrow[3
+9m [36mnew[39m [33mError[39
+m([32m'Cannot resolve showdown
+: need 5 community cards'[39m)
+[33m;[39m
+     [90m     |[39m          
+     [31m[1m^[22m[39m
+     [90m 162 |[39m     }
+     [90m 163 |[39m
+     [90m 164 |[39m     [90m
+// Clone state for immutability
+[39m[0m
+
+      at resolveShowdown (src/c
+ore/showdown/index.ts:161:15)
+      at Object.applyAction (sr
+c/core/engine/index.ts:189:31)
+      at Object.<anonymous> (sr
+c/core/engine/showdown_next_han
+d.test.ts:96:24)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 total
+Snapshots:   0 total
+Time:        0.599 s, estimated
+ 1 s
+Ran all test suites matching sr
+c/core/engine/showdown_next_han
+d.test.ts.

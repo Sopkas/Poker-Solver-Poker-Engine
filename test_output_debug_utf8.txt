@@ -1,0 +1,45 @@
+﻿
+> poker-solver@0.1.0 test
+> jest src/core/engine/reproduce_bug.test.ts
+
+node.exe : FAIL src/core/engine
+/reproduce_bug.test.ts
+строка:1 знак:1
++ & "C:\Program Files\nodejs/no
+de.exe" "C:\Users\Sopkasss\AppD
+ata\Roami ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo          :  
+   NotSpecified: (FAIL src/co  
+  re/e...uce_bug.test.ts:Str   
+ ing) [], RemoteException
+    + FullyQualifiedErrorId :  
+   NativeCommandError
+ 
+  Bug Reproduction: Betting at 
+Showdown
+    ├Ч Should not allow actions
+ when street is showdown (6 ms)
+    тИЪ Should not allow action
+s after All-In Runout to Showdo
+wn (3 ms)
+
+  тЧП Bug Reproduction: Betting
+ at Showdown тА║ Should not all
+ow actions when street is showd
+own
+
+    Not this player's turn
+
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 passed
+, 2 total
+Snapshots:   0 total
+Time:        0.532 s, estimated
+ 1 s
+Ran all test suites matching sr
+c/core/engine/reproduce_bug.tes
+t.ts.
