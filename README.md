@@ -1,68 +1,114 @@
 # Poker Solver
 
-Проект представляет собой продвинутый движок и симулятор Техасского Холдема (No-Limit Texas Hold'em), разработанный с упором на корректность правил, производительность и тестируемость. Приложение позволяет симулировать раздачи, управлять состоянием игры и визуализировать процесс через веб-интерфейс.
+A GTO (Game Theory Optimal) poker solver for No-Limit Texas Hold'em with a complete game engine, hand evaluation, and game tree building capabilities.
 
-## Особенности
+## Features
 
-- **Core Engine**: Полностью реализованная логика покера, включая все улицы торговли (Preflop, Flop, Turn, River) и Showdown.
-- **Strict Rules Validation**: Строгая валидация действий игроков (Check, Call, Bet, Raise, Fold) в зависимости от контекста.
-- **Hand Evaluator**: Высокопроизводительный алгоритм оценки силы рук (7-card evaluator) с поддержкой кикеров.
-- **Showdown Resolution**: Корректный расчет победителей и распределение банков, включая сложную логику Side Pots (побочных банков).
-- **Immutable State**: Архитектура на основе неизменяемого состояния (Immutable State), что упрощает отладку, тестирование и реализацию функций Undo/Redo.
-- **Custom Scenarios**: Гибкая система настройки сценариев для симуляции конкретных игровых ситуаций (кастомные стеки, карманные карты, блайнды).
-- **Modern UI**: Отзывчивый интерфейс, построенный на React и Tailwind CSS.
+### Core Engine
+- **Complete NLHE Implementation**: Full game loop with all betting streets (Preflop, Flop, Turn, River, Showdown)
+- **Strict Rules Validation**: Legal action validation (Check, Call, Bet, Raise, Fold, All-In)
+- **Hand Evaluator**: High-performance 7-card hand evaluation with kicker support
+- **Side Pots**: Correct multi-way pot calculation and distribution
+- **Immutable State**: Functional architecture enabling Undo/Redo and replay
 
-## Технологический стек
+### Game Tree Builder
+- **Recursive Tree Generation**: Builds complete game trees from any game state
+- **Configurable Bet Sizing**: Customizable bet sizes per street (e.g., 33%, 50%, 75%, 100% pot)
+- **Raise Limits**: Prevents infinite loops with configurable max raises per street
+- **Terminal Node Detection**: Identifies showdown and fold-out terminal states
+- **State Hashing**: Unique node identification for tree traversal
+
+### UI / Visualization
+- **Interactive Poker Table**: 6-max table with real-time state visualization
+- **Replay System**: Step through hand history with VCR-style controls
+- **Range Matrix**: 13x13 hand matrix for range analysis
+- **God Mode**: Auto-switch between players for testing scenarios
+
+## Tech Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **UI Library**: [React 19](https://react.dev/)
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **UI**: [React 19](https://react.dev/) + [Tailwind CSS 4](https://tailwindcss.com/)
 - **Testing**: [Jest](https://jestjs.io/)
-- **State Management**: Custom Immutable State Pattern
+- **Architecture**: Immutable State Pattern
 
-## Установка и запуск
+## Project Structure
 
-### Предварительные требования
-- Node.js (версии 18 или выше)
-- npm или yarn
+```
+src/
+├── core/
+│   ├── engine/      # Game state transitions
+│   ├── rules/       # Action validation
+│   ├── evaluator/   # Hand strength evaluation
+│   ├── showdown/    # Winner determination & pot distribution
+│   ├── solver/      # Game Tree Builder
+│   │   ├── types.ts
+│   │   ├── treeBuilder.ts
+│   │   └── treeBuilder.test.ts
+│   └── types.ts     # Core type definitions
+├── ui/
+│   ├── components/  # React components
+│   ├── hooks/       # Custom hooks (usePokerEngine)
+│   └── layouts/     # Layout components
+├── contexts/        # React contexts
+└── utils/           # Helper functions
+```
 
-### Шаги по установке
+## Getting Started
 
-1. Клонируйте репозиторий (если применимо) или перейдите в папку проекта.
-2. Установите зависимости:
-   ```bash
-   npm install
-   ```
+### Prerequisites
+- Node.js 18+
+- npm or yarn
 
-### Запуск в режиме разработки
+### Installation
 
-Для запуска локального сервера разработки:
+```bash
+npm install
+```
+
+### Development
+
 ```bash
 npm run dev
 ```
-Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000).
 
-### Запуск тестов
+Open [http://localhost:3000](http://localhost:3000)
 
-Проект имеет обширное покрытие тестами для проверки логики движка и правил.
+### Testing
+
 ```bash
 npm test
 ```
 
-## Структура проекта
+## Game Tree Builder Usage
 
-- **`src/core`**: Ядро покерного движка.
-  - `engine`: Основной цикл игры и переходы состояний.
-  - `rules`: Валидация действий и правила улиц.
-  - `evaluator`: Алгоритмы оценки комбинаций карт.
-  - `showdown`: Логика вскрытия карт и распределения выигрыша.
-  - `types`: TypeScript определения типов.
-- **`src/ui`**: React-компоненты интерфейса.
-  - `components`: Переиспользуемые UI элементы (PokerTable, Seat, Card).
-- **`src/app`**: Страницы приложения (Next.js App Router).
-- **`src/utils`**: Вспомогательные функции.
+```typescript
+import { buildTree } from '@/core/solver/treeBuilder';
 
-## Статус разработки
+const config = {
+  betSizes: {
+    flop: [0.33, 0.5, 0.75, 1.0],
+    turn: [0.5, 0.75, 1.0],
+    river: [0.5, 0.75, 1.0]
+  },
+  maxRaises: 3
+};
 
-Проект находится в активной разработке. Реализованы основные механики игры, оценка рук и базовый UI. Ведется работа над улучшением UX и расширением функционала анализа раздач.
+const tree = buildTree(initialState, config);
+```
+
+## Roadmap
+
+- [x] Core poker engine
+- [x] Hand evaluation
+- [x] Side pots
+- [x] Replay system
+- [x] Game Tree Builder
+- [ ] CFR (Counterfactual Regret Minimization) solver
+- [ ] Range vs Range analysis
+- [ ] Equity calculator
+- [ ] Export/Import hand histories
+
+## License
+
+MIT
