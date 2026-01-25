@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# External Tools
+TexasSolver-master/
+
+# Temporary Files
+reproduce_issue.js
+log.md
+project_analysis.md
+test_output*.txt
+test_output*.log
+*.png

@@ -63,7 +63,21 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
         });
     };
 
+    const [seatErrors, setSeatErrors] = useState<Record<number, string>>({});
+
     const handleCardInput = (seat: number, input: string) => {
+        // Clear previous error
+        setSeatErrors(prev => {
+            const next = { ...prev };
+            delete next[seat];
+            return next;
+        });
+
+        if (!input.trim()) {
+            handlePlayerOverrideChange(seat, 'cards', undefined);
+            return;
+        }
+
         try {
             const cards = parseCards(input);
 
@@ -77,16 +91,20 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
                         )
                 );
                 if (isDuplicate) {
+                    setSeatErrors(prev => ({
+                        ...prev,
+                        [seat]: `Card ${card.rank}${card.suit} is already in use`
+                    }));
                     return; // Don't update if duplicate
                 }
             }
 
             handlePlayerOverrideChange(seat, 'cards', cards);
-        } catch (e) {
-            // Invalid input, maybe clear cards or show error state
-            if (input === '') {
-                handlePlayerOverrideChange(seat, 'cards', undefined);
-            }
+        } catch (e: any) {
+            setSeatErrors(prev => ({
+                ...prev,
+                [seat]: e.message || 'Invalid cards'
+            }));
         }
     };
 
@@ -170,8 +188,11 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
                             type="number"
                             min="2"
                             max="9"
-                            value={numPlayers}
-                            onChange={(e) => setNumPlayers(parseInt(e.target.value))}
+                            value={numPlayers || ''}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                setNumPlayers(isNaN(val) ? 0 : val);
+                            }}
                             className="w-full bg-gray-700 rounded px-3 py-2"
                         />
                     </div>
@@ -179,8 +200,11 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
                         <label className="block text-sm font-medium mb-1">Starting Stack</label>
                         <input
                             type="number"
-                            value={startingStack}
-                            onChange={(e) => setStartingStack(parseInt(e.target.value))}
+                            value={startingStack || ''}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                setStartingStack(isNaN(val) ? 0 : val);
+                            }}
                             className="w-full bg-gray-700 rounded px-3 py-2"
                         />
                     </div>
@@ -188,8 +212,11 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
                         <label className="block text-sm font-medium mb-1">Small Blind</label>
                         <input
                             type="number"
-                            value={smallBlind}
-                            onChange={(e) => setSmallBlind(parseInt(e.target.value))}
+                            value={smallBlind || ''}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                setSmallBlind(isNaN(val) ? 0 : val);
+                            }}
                             className="w-full bg-gray-700 rounded px-3 py-2"
                         />
                     </div>
@@ -197,8 +224,11 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
                         <label className="block text-sm font-medium mb-1">Big Blind</label>
                         <input
                             type="number"
-                            value={bigBlind}
-                            onChange={(e) => setBigBlind(parseInt(e.target.value))}
+                            value={bigBlind || ''}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                setBigBlind(isNaN(val) ? 0 : val);
+                            }}
                             className="w-full bg-gray-700 rounded px-3 py-2"
                         />
                     </div>
@@ -287,31 +317,37 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
                     {Array.from({ length: numPlayers }).map((_, i) => {
                         const override = playerOverrides.find(p => p.seat === i);
                         const cardStr = override?.cards ? override.cards.map(c => c.rank + c.suit).join('') : '';
+                        const error = seatErrors[i];
 
                         return (
-                            <div key={i} className="flex items-center gap-3 bg-gray-700 p-2 rounded">
-                                <span className="w-16 font-medium">Seat {i}</span>
-                                <input
-                                    type="text"
-                                    placeholder="Name"
-                                    value={override?.name || ''}
-                                    onChange={(e) => handlePlayerOverrideChange(i, 'name', e.target.value)}
-                                    className="bg-gray-600 rounded px-2 py-1 w-24 text-sm"
-                                />
-                                <input
-                                    type="number"
-                                    placeholder="Stack"
-                                    value={override?.stack || ''}
-                                    onChange={(e) => handlePlayerOverrideChange(i, 'stack', parseInt(e.target.value))}
-                                    className="bg-gray-600 rounded px-2 py-1 w-20 text-sm"
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Cards (e.g. AhKh)"
-                                    defaultValue={cardStr}
-                                    onBlur={(e) => handleCardInput(i, e.target.value)}
-                                    className="bg-gray-600 rounded px-2 py-1 flex-1 text-sm uppercase"
-                                />
+                            <div key={i} className="flex flex-col gap-1 bg-gray-700 p-2 rounded">
+                                <div className="flex items-center gap-3">
+                                    <span className="w-16 font-medium">Seat {i}</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Name"
+                                        value={override?.name || ''}
+                                        onChange={(e) => handlePlayerOverrideChange(i, 'name', e.target.value)}
+                                        className="bg-gray-600 rounded px-2 py-1 w-24 text-sm"
+                                    />
+                                    <input
+                                        type="number"
+                                        placeholder="Stack"
+                                        value={override?.stack || ''}
+                                        onChange={(e) => handlePlayerOverrideChange(i, 'stack', parseInt(e.target.value))}
+                                        className="bg-gray-600 rounded px-2 py-1 w-20 text-sm"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Cards (e.g. AhKh)"
+                                        defaultValue={cardStr}
+                                        onBlur={(e) => handleCardInput(i, e.target.value)}
+                                        className={`bg-gray-600 rounded px-2 py-1 flex-1 text-sm uppercase ${error ? 'border border-red-500' : ''}`}
+                                    />
+                                </div>
+                                {error && (
+                                    <span className="text-red-400 text-xs ml-16">{error}</span>
+                                )}
                             </div>
                         );
                     })}

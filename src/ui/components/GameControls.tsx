@@ -26,7 +26,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
     return (
         <div className="bg-gray-900 border-b border-gray-800 p-2 flex items-center justify-between shadow-md z-30 relative">
             <div className="flex items-center gap-4">
-                <h1 className="text-sm font-bold text-yellow-500 tracking-wider px-2">POKER SOLVER v1.0</h1>
+                <h1 className="text-sm font-bold text-yellow-500 tracking-wider px-2">POKER SOLVER v2.0</h1>
 
                 <div className="h-6 w-px bg-gray-700 mx-2"></div>
 

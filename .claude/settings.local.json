@@ -6,7 +6,23 @@
       "Bash(npx tsc:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Game Tree Builder for GTO solver\n\n- Implement recursive tree builder with configurable bet sizes\n- Add solver types \\(SolverNode, SolverEdge, TreeConfig\\)\n- Support terminal node detection \\(showdown, fold-out\\)\n- Include comprehensive tests for tree generation\n- Update README with solver documentation and roadmap\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(wasm-pack build:*)",
+      "Bash(pushd:*)",
+      "Bash(popd)",
+      "Bash(npm run dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(timeout:*)",
+      "Bash(npm run wasm:build:*)",
+      "Bash(netstat:*)",
+      "Bash(xargs:*)",
+      "Bash(kill:*)",
+      "Bash(powershell -Command \"Stop-Process -Id 23292,38940 -Force\")",
+      "Bash(npx kill-port:*)",
+      "Bash(ping:*)",
+      "Bash(npx jest:*)",
+      "Bash(curl:*)",
+      "Bash(node test-solver-scenario.mjs:*)"
     ]
   }
 }

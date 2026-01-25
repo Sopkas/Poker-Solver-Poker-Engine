@@ -1,13 +1,17 @@
 {
   "name": "poker-solver",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "jest"
+    "test": "jest",
+    "wasm:build": "wasm-pack build src/core-rs --target web --release --out-dir ../../public/wasm",
+    "wasm:dev": "wasm-pack build src/core-rs --target web --dev --out-dir ../../public/wasm",
+    "wasm:clean": "npx rimraf public/wasm src/core-rs/target",
+    "build:all": "npm run wasm:build"
   },
   "dependencies": {
     "next": "16.1.4",
