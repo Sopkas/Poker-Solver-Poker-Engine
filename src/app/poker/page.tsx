@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { usePokerEngine } from '../../ui/hooks/usePokerEngine';
 import { PokerTable } from '../../ui/components/PokerTable';
 import { HandConfig } from '../../core/types';
+import { SelectionProvider } from '../../contexts/SelectionContext';
 
 // Initial Config for testing
 const INITIAL_CONFIG: HandConfig = {
@@ -42,51 +43,53 @@ export default function PokerPage() {
     }, [state.actionSeat, godMode, replay.isLive]);
 
     return (
-        <div className="relative">
-            {/* Debug / Config Overlay */}
-            <div className="absolute top-4 left-4 z-50 bg-black/80 text-white p-4 rounded text-xs">
-                <h3 className="font-bold mb-2">Debug Controls</h3>
-                <div className="flex gap-2 mb-2">
-                    <button
-                        onClick={() => resetGame({ ...INITIAL_CONFIG, seed: Date.now() })}
-                        className="bg-red-600 px-2 py-1 rounded hover:bg-red-500"
-                    >
-                        Reset Game
-                    </button>
-                    {state.street === 'showdown' && replay.isLive && (
+        <SelectionProvider>
+            <div className="relative">
+                {/* Debug / Config Overlay */}
+                <div className="absolute top-4 left-4 z-50 bg-black/80 text-white p-4 rounded text-xs">
+                    <h3 className="font-bold mb-2">Debug Controls</h3>
+                    <div className="flex gap-2 mb-2">
                         <button
-                            onClick={nextHand}
-                            className="bg-blue-600 px-2 py-1 rounded hover:bg-blue-500 animate-pulse"
+                            onClick={() => resetGame({ ...INITIAL_CONFIG, seed: Date.now() })}
+                            className="bg-red-600 px-2 py-1 rounded hover:bg-red-500"
                         >
-                            Next Hand
+                            Reset Game
                         </button>
-                    )}
-                    <button
-                        onClick={() => setGodMode(!godMode)}
-                        className={`px-2 py-1 rounded ${godMode ? 'bg-green-600' : 'bg-gray-600'}`}
-                    >
-                        God Mode: {godMode ? 'ON' : 'OFF'}
-                    </button>
-                </div>
-                <div>
-                    Street: {state.street} <br />
-                    Pot: {state.pots.reduce((s, p) => s + p.amount, 0)} <br />
-                    Min Raise: {state.minRaise}
-                </div>
-                {error && (
-                    <div className="mt-2 text-red-400 font-bold">
-                        Error: {error}
+                        {state.street === 'showdown' && replay.isLive && (
+                            <button
+                                onClick={nextHand}
+                                className="bg-blue-600 px-2 py-1 rounded hover:bg-blue-500 animate-pulse"
+                            >
+                                Next Hand
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setGodMode(!godMode)}
+                            className={`px-2 py-1 rounded ${godMode ? 'bg-green-600' : 'bg-gray-600'}`}
+                        >
+                            God Mode: {godMode ? 'ON' : 'OFF'}
+                        </button>
                     </div>
-                )}
-            </div>
+                    <div>
+                        Street: {state.street} <br />
+                        Pot: {state.pots.reduce((s, p) => s + p.amount, 0)} <br />
+                        Min Raise: {state.minRaise}
+                    </div>
+                    {error && (
+                        <div className="mt-2 text-red-400 font-bold">
+                            Error: {error}
+                        </div>
+                    )}
+                </div>
 
-            <PokerTable
-                state={state}
-                onDispatch={dispatch}
-                heroSeat={heroSeat}
-                godMode={godMode}
-                replay={replay}
-            />
-        </div>
+                <PokerTable
+                    state={state}
+                    onDispatch={dispatch}
+                    heroSeat={heroSeat}
+                    godMode={godMode}
+                    replay={replay}
+                />
+            </div>
+        </SelectionProvider>
     );
 }

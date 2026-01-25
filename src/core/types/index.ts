@@ -106,4 +106,11 @@ export interface ScenarioConfig {
   heroSeat: number;
   dealerSeat?: number;
   players?: ScenarioPlayer[];
+  // Scenario Builder (God Mode ++) - Start at any street with custom board/pot
+  scenario?: {
+    startStreet: 'preflop' | 'flop' | 'turn' | 'river';
+    initialPot: number;
+    boardCards: Card[];
+    deadCards?: Card[];  // Additional cards to remove from deck
+  };
 }

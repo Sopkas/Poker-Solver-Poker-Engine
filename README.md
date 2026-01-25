@@ -18,8 +18,14 @@ A GTO (Game Theory Optimal) poker solver for No-Limit Texas Hold'em with a compl
 - **Terminal Node Detection**: Identifies showdown and fold-out terminal states
 - **State Hashing**: Unique node identification for tree traversal
 
+### Solver
+- **CFR Engine**: Counterfactual Regret Minimization for Nash Equilibrium approximation
+- **Heads-Up River Solver**: Specialized solver for river subgames
+- **Strategy Visualization**: Heatmaps and range visualization
+
 ### UI / Visualization
 - **Interactive Poker Table**: 6-max table with real-time state visualization
+- **Analysis Studio**: Professional split-view layout for deep game analysis
 - **Replay System**: Step through hand history with VCR-style controls
 - **Range Matrix**: 13x13 hand matrix for range analysis
 - **God Mode**: Auto-switch between players for testing scenarios
@@ -97,6 +103,20 @@ const config = {
 const tree = buildTree(initialState, config);
 ```
 
+## CFR Solver Usage
+
+```typescript
+import { buildRiverTree, runCFR } from '@/core/solver/cfr';
+
+// 1. Build Game Tree
+const tree = buildRiverTree(gameState, [0.5, 1.0], 3);
+
+// 2. Run Solver
+const result = runCFR(tree, [], board, 1000);
+
+console.log(`Nash Distance: ${result.rootEV}`);
+```
+
 ## Roadmap
 
 - [x] Core poker engine
@@ -104,7 +124,7 @@ const tree = buildTree(initialState, config);
 - [x] Side pots
 - [x] Replay system
 - [x] Game Tree Builder
-- [ ] CFR (Counterfactual Regret Minimization) solver
+- [x] CFR (Counterfactual Regret Minimization) solver
 - [ ] Range vs Range analysis
 - [ ] Equity calculator
 - [ ] Export/Import hand histories

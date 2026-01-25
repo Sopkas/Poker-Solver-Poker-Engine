@@ -41,7 +41,9 @@ const createShowdownState = (
         totalBet: 0,
         status: p.folded ? 'folded' : 'active',
         holeCards: p.holeCards,
-        hasActed: true
+        hasActed: true,
+        actedOnStreet: true,
+        startHandStack: p.stack
     }));
 
     return {
@@ -61,7 +63,8 @@ const createShowdownState = (
         actionSeat: 0,
         minRaise: 10,
         currentBet: 0,
-        lastAggressor: null
+        lastAggressor: null,
+        lastRaiseIsFull: true
     };
 };
 

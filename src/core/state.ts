@@ -1,7 +1,21 @@
-import { GameState, HandConfig, Player, Pot, Card, PlayerStatus, ScenarioConfig } from './types';
+import { GameState, HandConfig, Player, Pot, Card, PlayerStatus, ScenarioConfig, Street } from './types';
 import { createDeck, shuffleDeck, drawCards } from './deck';
 import { createPRNG, PRNGState } from './prng';
 import { validateTableConfig, validatePlayerStack, isValidChipAmount } from './validation';
+
+/**
+ * Validates that board card count matches the required count for a street.
+ */
+const validateBoardLength = (street: Street, boardCards: Card[]): void => {
+    const required: Record<string, number> = { 'flop': 3, 'turn': 4, 'river': 5 };
+    const expected = required[street];
+    if (expected !== undefined && boardCards.length !== expected) {
+        throw {
+            code: 'INVALID_BOARD_LENGTH',
+            message: `${street} requires exactly ${expected} board cards, got ${boardCards.length}`,
+        };
+    }
+};
 
 /**
  * Creates the initial state for a new hand.
@@ -65,6 +79,30 @@ export const createInitialState = (config: HandConfig, scenarioConfig?: Scenario
                 });
             }
         });
+    }
+
+    // Scenario Builder: Remove board cards from deck
+    let scenarioBoardCards: Card[] = [];
+    if (scenarioConfig?.scenario) {
+        const { startStreet, boardCards, deadCards } = scenarioConfig.scenario;
+
+        // Validate board length if not preflop
+        if (startStreet !== 'preflop') {
+            validateBoardLength(startStreet, boardCards);
+            scenarioBoardCards = boardCards;
+
+            // Remove board cards from deck
+            boardCards.forEach(c => {
+                deckToShuffle = deckToShuffle.filter(dc => !(dc.rank === c.rank && dc.suit === c.suit));
+            });
+        }
+
+        // Remove dead cards from deck
+        if (deadCards) {
+            deadCards.forEach(c => {
+                deckToShuffle = deckToShuffle.filter(dc => !(dc.rank === c.rank && dc.suit === c.suit));
+            });
+        }
     }
 
     // Shuffle the remaining deck
@@ -145,9 +183,13 @@ export const createInitialState = (config: HandConfig, scenarioConfig?: Scenario
     const bbIndexInSorted = sortedByProximity.findIndex(p => p.id === bbPlayer.id);
     const utgPlayer = sortedByProximity[(bbIndexInSorted + 1) % sortedByProximity.length];
 
-    // 5. Post Antes (if applicable)
+    // Check if this is a post-flop scenario (skip blinds/antes)
+    const isPostFlopScenario = scenarioConfig?.scenario?.startStreet &&
+        scenarioConfig.scenario.startStreet !== 'preflop';
+
+    // 5. Post Antes (if applicable and not post-flop scenario)
     let potAmount = 0;
-    if (config.tableConfig.ante > 0) {
+    if (config.tableConfig.ante > 0 && !isPostFlopScenario) {
         players.forEach(p => {
             if (p.status === 'active') {
                 const anteAmount = Math.min(p.stack, config.tableConfig.ante);
@@ -159,26 +201,28 @@ export const createInitialState = (config: HandConfig, scenarioConfig?: Scenario
         });
     }
 
-    // 6. Post Blinds
-    // SB (if not dead)
-    if (sbPlayer) {
-        const sbIndex = players.findIndex(p => p.id === sbPlayer.id);
-        const sbAmount = Math.min(players[sbIndex].stack, config.tableConfig.smallBlind);
-        players[sbIndex].stack -= sbAmount;
-        players[sbIndex].bet = sbAmount;
-        players[sbIndex].totalBet += sbAmount;
-        potAmount += sbAmount;
-        if (players[sbIndex].stack === 0) players[sbIndex].status = 'all-in';
-    }
+    // 6. Post Blinds (skip for post-flop scenarios - blinds already collected)
+    if (!isPostFlopScenario) {
+        // SB (if not dead)
+        if (sbPlayer) {
+            const sbIndex = players.findIndex(p => p.id === sbPlayer.id);
+            const sbAmount = Math.min(players[sbIndex].stack, config.tableConfig.smallBlind);
+            players[sbIndex].stack -= sbAmount;
+            players[sbIndex].bet = sbAmount;
+            players[sbIndex].totalBet += sbAmount;
+            potAmount += sbAmount;
+            if (players[sbIndex].stack === 0) players[sbIndex].status = 'all-in';
+        }
 
-    // BB
-    const bbIndex = players.findIndex(p => p.id === bbPlayer.id);
-    const bbAmount = Math.min(players[bbIndex].stack, config.tableConfig.bigBlind);
-    players[bbIndex].stack -= bbAmount;
-    players[bbIndex].bet = bbAmount;
-    players[bbIndex].totalBet += bbAmount;
-    potAmount += bbAmount;
-    if (players[bbIndex].stack === 0) players[bbIndex].status = 'all-in';
+        // BB
+        const bbIndex = players.findIndex(p => p.id === bbPlayer.id);
+        const bbAmount = Math.min(players[bbIndex].stack, config.tableConfig.bigBlind);
+        players[bbIndex].stack -= bbAmount;
+        players[bbIndex].bet = bbAmount;
+        players[bbIndex].totalBet += bbAmount;
+        potAmount += bbAmount;
+        if (players[bbIndex].stack === 0) players[bbIndex].status = 'all-in';
+    }
 
     // 7. Deal Hole Cards (2 per active player)
     // Deal in order: SB first, then around the table
@@ -220,9 +264,36 @@ export const createInitialState = (config: HandConfig, scenarioConfig?: Scenario
         actionSeat = utgPlayer.seat;
     }
 
-    // 9. Create Initial Pot
-    const pot: Pot = {
-        amount: 0, // Blinds are in player.bet, not yet in pot
+    // Scenario Builder: Determine initial street, board, pot, and action seat
+    let initialStreet: Street = 'preflop';
+    let initialBoard: Card[] = [];
+    let initialPotAmount = 0;
+    let scenarioActionSeat = actionSeat;
+
+    if (scenarioConfig?.scenario && scenarioConfig.scenario.startStreet !== 'preflop') {
+        const { startStreet, initialPot, boardCards } = scenarioConfig.scenario;
+        initialStreet = startStreet;
+        initialBoard = boardCards;
+        initialPotAmount = initialPot;
+
+        // Post-flop action starts with first active player left of dealer
+        const maxSeats = config.tableConfig.maxSeats;
+        let seat = (config.dealerSeat + 1) % maxSeats;
+        let checked = 0;
+        while (checked < maxSeats) {
+            const player = players.find(p => p.seat === seat && p.status === 'active');
+            if (player) {
+                scenarioActionSeat = seat;
+                break;
+            }
+            seat = (seat + 1) % maxSeats;
+            checked++;
+        }
+    }
+
+    // Create pot with scenario initial pot as dead money
+    const initialPot: Pot = {
+        amount: initialPotAmount,
         eligiblePlayers: activePlayers.map(p => p.id),
     };
 
@@ -231,14 +302,14 @@ export const createInitialState = (config: HandConfig, scenarioConfig?: Scenario
         rngState,
         deck: currentDeck,
         players,
-        pots: [pot],
-        communityCards: [],
-        street: 'preflop',
+        pots: [initialPot],
+        communityCards: initialBoard,
+        street: initialStreet,
         dealerSeat: config.dealerSeat,
-        actionSeat,
+        actionSeat: scenarioActionSeat,
         minRaise: config.tableConfig.bigBlind,
-        currentBet: config.tableConfig.bigBlind, // BB is the current bet preflop
-        lastAggressor: null, // No aggression yet (blinds don't count)
+        currentBet: initialStreet === 'preflop' ? config.tableConfig.bigBlind : 0,
+        lastAggressor: null,
         lastRaiseIsFull: true,
     };
 };

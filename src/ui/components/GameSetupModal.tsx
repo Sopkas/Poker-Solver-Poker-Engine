@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ScenarioConfig, ScenarioPlayer, Card } from '../../core/types';
 import { parseCards } from '../../utils/cardParser';
 
@@ -6,6 +6,22 @@ interface GameSetupModalProps {
     onStart: (config: ScenarioConfig) => void;
     onClose: () => void;
 }
+
+type StartStreet = 'preflop' | 'flop' | 'turn' | 'river';
+
+const streetLabels: Record<StartStreet, string> = {
+    preflop: 'Preflop',
+    flop: 'Flop',
+    turn: 'Turn',
+    river: 'River',
+};
+
+const requiredBoardCards: Record<StartStreet, number> = {
+    preflop: 0,
+    flop: 3,
+    turn: 4,
+    river: 5,
+};
 
 export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose }) => {
     const [numPlayers, setNumPlayers] = useState(6);
@@ -17,6 +33,24 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
 
     // Player specific overrides
     const [playerOverrides, setPlayerOverrides] = useState<ScenarioPlayer[]>([]);
+
+    // Scenario Builder state
+    const [startStreet, setStartStreet] = useState<StartStreet>('preflop');
+    const [initialPot, setInitialPot] = useState(0);
+    const [boardInput, setBoardInput] = useState('');
+    const [boardCards, setBoardCards] = useState<Card[]>([]);
+    const [boardError, setBoardError] = useState<string | null>(null);
+
+    // Collect all used cards (player cards + board cards) for validation
+    const usedCards = useMemo(() => {
+        const cards: Card[] = [...boardCards];
+        playerOverrides.forEach(p => {
+            if (p.cards) {
+                cards.push(...p.cards);
+            }
+        });
+        return cards;
+    }, [boardCards, playerOverrides]);
 
     const handlePlayerOverrideChange = (seat: number, field: keyof ScenarioPlayer, value: any) => {
         setPlayerOverrides(prev => {
@@ -32,17 +66,76 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
     const handleCardInput = (seat: number, input: string) => {
         try {
             const cards = parseCards(input);
+
+            // Check for duplicates with board cards or other players
+            for (const card of cards) {
+                const isDuplicate = usedCards.some(
+                    c => c.rank === card.rank && c.suit === card.suit &&
+                        // Exclude current player's cards from duplicate check
+                        !playerOverrides.find(p => p.seat === seat)?.cards?.some(
+                            pc => pc.rank === card.rank && pc.suit === card.suit
+                        )
+                );
+                if (isDuplicate) {
+                    return; // Don't update if duplicate
+                }
+            }
+
             handlePlayerOverrideChange(seat, 'cards', cards);
         } catch (e) {
             // Invalid input, maybe clear cards or show error state
-            // For now, just don't update if invalid
             if (input === '') {
                 handlePlayerOverrideChange(seat, 'cards', undefined);
             }
         }
     };
 
+    const handleBoardInput = (input: string) => {
+        setBoardInput(input);
+        setBoardError(null);
+
+        if (input.trim() === '') {
+            setBoardCards([]);
+            return;
+        }
+
+        try {
+            const cards = parseCards(input);
+
+            // Check for duplicates with player cards
+            for (const card of cards) {
+                const isDuplicate = playerOverrides.some(p =>
+                    p.cards?.some(c => c.rank === card.rank && c.suit === card.suit)
+                );
+                if (isDuplicate) {
+                    setBoardError(`Card ${card.rank}${card.suit} is already assigned to a player`);
+                    return;
+                }
+            }
+
+            setBoardCards(cards);
+        } catch (e: any) {
+            setBoardError(e.message || 'Invalid cards');
+        }
+    };
+
+    const validateScenario = (): string | null => {
+        if (startStreet !== 'preflop') {
+            const required = requiredBoardCards[startStreet];
+            if (boardCards.length !== required) {
+                return `${streetLabels[startStreet]} requires exactly ${required} board cards, got ${boardCards.length}`;
+            }
+        }
+        return null;
+    };
+
     const handleStart = () => {
+        const error = validateScenario();
+        if (error) {
+            setBoardError(error);
+            return;
+        }
+
         const config: ScenarioConfig = {
             numPlayers,
             smallBlind,
@@ -50,8 +143,18 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
             startingStack,
             heroSeat,
             dealerSeat,
-            players: playerOverrides
+            players: playerOverrides,
         };
+
+        // Add scenario if not preflop
+        if (startStreet !== 'preflop') {
+            config.scenario = {
+                startStreet,
+                initialPot,
+                boardCards,
+            };
+        }
+
         onStart(config);
     };
 
@@ -123,6 +226,60 @@ export const GameSetupModal: React.FC<GameSetupModalProps> = ({ onStart, onClose
                             ))}
                         </select>
                     </div>
+                </div>
+
+                {/* Scenario Builder Section */}
+                <h3 className="text-xl font-semibold mb-3 text-amber-400">Scenario Builder (God Mode++)</h3>
+                <div className="bg-gray-700 p-4 rounded-lg mb-6">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Start Street</label>
+                            <select
+                                value={startStreet}
+                                onChange={(e) => setStartStreet(e.target.value as StartStreet)}
+                                className="w-full bg-gray-600 rounded px-3 py-2"
+                            >
+                                {Object.entries(streetLabels).map(([value, label]) => (
+                                    <option key={value} value={value}>{label}</option>
+                                ))}
+                            </select>
+                        </div>
+                        {startStreet !== 'preflop' && (
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Initial Pot (Dead Money)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={initialPot}
+                                    onChange={(e) => setInitialPot(parseInt(e.target.value) || 0)}
+                                    className="w-full bg-gray-600 rounded px-3 py-2"
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {startStreet !== 'preflop' && (
+                        <div>
+                            <label className="block text-sm font-medium mb-1">
+                                Board Cards ({boardCards.length}/{requiredBoardCards[startStreet]} required)
+                            </label>
+                            <input
+                                type="text"
+                                placeholder={`e.g. ${startStreet === 'flop' ? 'AhKhQh' : startStreet === 'turn' ? 'AhKhQhJh' : 'AhKhQhJhTh'}`}
+                                value={boardInput}
+                                onChange={(e) => handleBoardInput(e.target.value.toUpperCase())}
+                                className={`w-full bg-gray-600 rounded px-3 py-2 uppercase ${boardError ? 'border-2 border-red-500' : ''}`}
+                            />
+                            {boardError && (
+                                <p className="text-red-400 text-sm mt-1">{boardError}</p>
+                            )}
+                            {boardCards.length > 0 && !boardError && (
+                                <p className="text-green-400 text-sm mt-1">
+                                    ✓ {boardCards.map(c => c.rank + c.suit).join(' ')}
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <h3 className="text-xl font-semibold mb-3">Player Overrides (God Mode)</h3>

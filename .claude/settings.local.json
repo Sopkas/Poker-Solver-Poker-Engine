@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm test:*)",
       "Bash(npm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Game Tree Builder for GTO solver\n\n- Implement recursive tree builder with configurable bet sizes\n- Add solver types \\(SolverNode, SolverEdge, TreeConfig\\)\n- Support terminal node detection \\(showdown, fold-out\\)\n- Include comprehensive tests for tree generation\n- Update README with solver documentation and roadmap\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)"
     ]
   }
 }

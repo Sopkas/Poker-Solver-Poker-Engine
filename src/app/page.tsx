@@ -13,6 +13,7 @@ import { RangeMatrix } from '@/ui/components/tools/RangeMatrix';
 import { GameControls } from '@/ui/components/GameControls';
 import { SidebarTabs } from '@/ui/components/layout/SidebarTabs';
 import { StatsTab } from '@/ui/components/tools/StatsTab';
+import { SolverPanel } from '@/ui/components/tools/SolverPanel';
 
 // Initial Config for testing
 const INITIAL_CONFIG: HandConfig = {
@@ -105,9 +106,11 @@ export default function Home() {
             sidebar={
               <SidebarTabs
                 tabs={[
+                  { id: 'solver', label: 'Solver', content: <SolverPanel state={state} heroSeat={heroSeat} /> },
                   { id: 'ranges', label: 'Ranges', content: <RangeMatrix /> },
                   { id: 'stats', label: 'Stats', content: <StatsTab state={state} heroSeat={heroSeat} /> }
                 ]}
+                defaultTabId="solver"
               />
             }
           >

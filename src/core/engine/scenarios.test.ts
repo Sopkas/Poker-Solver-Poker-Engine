@@ -356,3 +356,213 @@ describe('Scenario Builder (God Mode)', () => {
         expect(errors).toHaveLength(0);
     });
 });
+
+describe('Scenario Builder (God Mode++) - Street Selection', () => {
+    test('should start game at Flop with 3 board cards', () => {
+        const config: HandConfig = {
+            id: 'flop-start-test',
+            players: [
+                { id: 'p1', name: 'Hero', stack: 1000, seat: 0 },
+                { id: 'p2', name: 'Villain', stack: 1000, seat: 1 },
+            ],
+            tableConfig: { maxSeats: 6, smallBlind: 1, bigBlind: 2, ante: 0 },
+            dealerSeat: 0,
+            seed: 12345,
+        };
+
+        const scenarioConfig: ScenarioConfig = {
+            numPlayers: 2,
+            smallBlind: 1,
+            bigBlind: 2,
+            startingStack: 1000,
+            heroSeat: 0,
+            scenario: {
+                startStreet: 'flop',
+                initialPot: 50,
+                boardCards: [
+                    { rank: 'A', suit: 'h' },
+                    { rank: 'K', suit: 'h' },
+                    { rank: 'Q', suit: 'h' },
+                ],
+            },
+        };
+
+        const state = createInitialState(config, scenarioConfig);
+
+        // Verify street is flop
+        expect(state.street).toBe('flop');
+
+        // Verify board has 3 cards
+        expect(state.communityCards).toHaveLength(3);
+        expect(state.communityCards).toContainEqual({ rank: 'A', suit: 'h' });
+        expect(state.communityCards).toContainEqual({ rank: 'K', suit: 'h' });
+        expect(state.communityCards).toContainEqual({ rank: 'Q', suit: 'h' });
+
+        // Verify pot has initial amount
+        expect(state.pots[0].amount).toBe(50);
+
+        // Verify currentBet is 0 (post-flop)
+        expect(state.currentBet).toBe(0);
+
+        // Verify board cards are not in deck
+        state.communityCards.forEach(c => {
+            const inDeck = state.deck.some(dc => dc.rank === c.rank && dc.suit === c.suit);
+            expect(inDeck).toBe(false);
+        });
+    });
+
+    test('should start game at River with 5 board cards', () => {
+        const config: HandConfig = {
+            id: 'river-start-test',
+            players: [
+                { id: 'p1', name: 'Hero', stack: 1000, seat: 0 },
+                { id: 'p2', name: 'Villain', stack: 1000, seat: 1 },
+            ],
+            tableConfig: { maxSeats: 6, smallBlind: 1, bigBlind: 2, ante: 0 },
+            dealerSeat: 0,
+            seed: 12345,
+        };
+
+        const scenarioConfig: ScenarioConfig = {
+            numPlayers: 2,
+            smallBlind: 1,
+            bigBlind: 2,
+            startingStack: 1000,
+            heroSeat: 0,
+            scenario: {
+                startStreet: 'river',
+                initialPot: 200,
+                boardCards: [
+                    { rank: 'A', suit: 'h' },
+                    { rank: 'K', suit: 'h' },
+                    { rank: 'Q', suit: 'h' },
+                    { rank: 'J', suit: 'h' },
+                    { rank: 'T', suit: 'h' },
+                ],
+            },
+        };
+
+        const state = createInitialState(config, scenarioConfig);
+
+        // Verify street is river
+        expect(state.street).toBe('river');
+
+        // Verify board has 5 cards
+        expect(state.communityCards).toHaveLength(5);
+
+        // Verify pot has initial amount
+        expect(state.pots[0].amount).toBe(200);
+    });
+
+    test('should throw error for invalid board length', () => {
+        const config: HandConfig = {
+            id: 'invalid-board-test',
+            players: [
+                { id: 'p1', name: 'Hero', stack: 1000, seat: 0 },
+                { id: 'p2', name: 'Villain', stack: 1000, seat: 1 },
+            ],
+            tableConfig: { maxSeats: 6, smallBlind: 1, bigBlind: 2, ante: 0 },
+            dealerSeat: 0,
+            seed: 12345,
+        };
+
+        const scenarioConfig: ScenarioConfig = {
+            numPlayers: 2,
+            smallBlind: 1,
+            bigBlind: 2,
+            startingStack: 1000,
+            heroSeat: 0,
+            scenario: {
+                startStreet: 'river',
+                initialPot: 100,
+                boardCards: [
+                    { rank: 'A', suit: 'h' },
+                    { rank: 'K', suit: 'h' },
+                    { rank: 'Q', suit: 'h' },
+                ], // Only 3 cards for river (should be 5)
+            },
+        };
+
+        expect(() => createInitialState(config, scenarioConfig)).toThrow('river requires exactly 5 board cards');
+    });
+
+    test('should set post-flop action to first player left of dealer', () => {
+        const config: HandConfig = {
+            id: 'action-seat-test',
+            players: [
+                { id: 'p1', name: 'Player1', stack: 1000, seat: 0 },
+                { id: 'p2', name: 'Player2', stack: 1000, seat: 1 },
+                { id: 'p3', name: 'Player3', stack: 1000, seat: 2 },
+            ],
+            tableConfig: { maxSeats: 6, smallBlind: 1, bigBlind: 2, ante: 0 },
+            dealerSeat: 2, // Dealer at seat 2, action should start at seat 0
+            seed: 12345,
+        };
+
+        const scenarioConfig: ScenarioConfig = {
+            numPlayers: 3,
+            smallBlind: 1,
+            bigBlind: 2,
+            startingStack: 1000,
+            heroSeat: 0,
+            dealerSeat: 2,
+            scenario: {
+                startStreet: 'turn',
+                initialPot: 100,
+                boardCards: [
+                    { rank: 'A', suit: 'h' },
+                    { rank: 'K', suit: 'h' },
+                    { rank: 'Q', suit: 'h' },
+                    { rank: 'J', suit: 'h' },
+                ],
+            },
+        };
+
+        const state = createInitialState(config, scenarioConfig);
+
+        // Post-flop, action should be first active player left of dealer
+        // Dealer at seat 2, so seat 0 acts first (next after 2 is 3, then 4, then 5, then 0)
+        expect(state.actionSeat).toBe(0);
+    });
+
+    test('should remove dead cards from deck', () => {
+        const config: HandConfig = {
+            id: 'dead-cards-test',
+            players: [
+                { id: 'p1', name: 'Hero', stack: 1000, seat: 0 },
+                { id: 'p2', name: 'Villain', stack: 1000, seat: 1 },
+            ],
+            tableConfig: { maxSeats: 6, smallBlind: 1, bigBlind: 2, ante: 0 },
+            dealerSeat: 0,
+            seed: 12345,
+        };
+
+        const scenarioConfig: ScenarioConfig = {
+            numPlayers: 2,
+            smallBlind: 1,
+            bigBlind: 2,
+            startingStack: 1000,
+            heroSeat: 0,
+            scenario: {
+                startStreet: 'flop',
+                initialPot: 50,
+                boardCards: [
+                    { rank: 'A', suit: 'h' },
+                    { rank: 'K', suit: 'h' },
+                    { rank: 'Q', suit: 'h' },
+                ],
+                deadCards: [
+                    { rank: '2', suit: 's' },
+                    { rank: '3', suit: 's' },
+                ],
+            },
+        };
+
+        const state = createInitialState(config, scenarioConfig);
+
+        // Verify dead cards are not in deck
+        expect(state.deck.some(c => c.rank === '2' && c.suit === 's')).toBe(false);
+        expect(state.deck.some(c => c.rank === '3' && c.suit === 's')).toBe(false);
+    });
+});
+

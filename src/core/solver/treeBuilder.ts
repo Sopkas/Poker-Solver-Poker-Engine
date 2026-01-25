@@ -96,7 +96,8 @@ function recursiveBuild(state: GameState, config: TreeConfig, raisesInStreet: nu
         const potSize = state.pots.reduce((sum, p) => sum + p.amount, 0) + state.players.reduce((sum, p) => sum + p.bet, 0);
 
         // Get configured sizes for this street
-        const sizes = config.betSizes[state.street] || [];
+        const street = state.street as 'preflop' | 'flop' | 'turn' | 'river';
+        const sizes = (street !== 'preflop' ? config.betSizes[street] : config.betSizes.preflop) || [];
 
         for (const pct of sizes) {
             // Calculate amount

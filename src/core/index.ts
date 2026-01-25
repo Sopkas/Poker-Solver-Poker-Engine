@@ -59,3 +59,37 @@ export {
 } from './ranges';
 export type { Range, HandCategory, HandInfo, RangeStats, RankChar } from './ranges';
 
+// Solver exports
+export {
+    DiscountedCFRTrainer,
+    DEFAULT_DCFR_CONFIG,
+    createInfosetKey,
+} from './solver/DiscountedCFR';
+export type { DiscountedCFRConfig } from './solver/DiscountedCFR';
+
+export {
+    BestResponse,
+    calculateExploitability,
+    formatExploitability,
+} from './solver/BestResponse';
+export type { ExploitabilityResult } from './solver/BestResponse';
+
+export {
+    DEFAULT_EXTENDED_CONFIG,
+    DEFAULT_DCFR_PARAMS,
+} from './solver/types';
+export type {
+    StreetPositionConfig,
+    StreetConfig,
+    ExtendedTreeConfig,
+    GameTreeNodeType,
+    GameRound,
+    BaseGameNode,
+    ActionGameNode,
+    ChanceGameNode,
+    ShowdownGameNode,
+    TerminalGameNode,
+    GameNode,
+    DiscountedCFRParams,
+    ExtendedCFRResult,
+} from './solver/types';
